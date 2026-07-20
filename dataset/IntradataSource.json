@@ -1,0 +1,28 @@
+{
+	"name": "IntradataSource",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@concat('TOS Kaggle data week ending ',utcNow('yyyy MM dd'),'.csv')",
+					"type": "Expression"
+				},
+				"folderPath": "csv",
+				"fileSystem": "adf-ssis-source"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,15 @@
+{
+	"name": "ssis-adf-daksh",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "1e6ec21f-79f6-4664-95ce-3b979deaa4b7",
+		"tenantId": "1441b0d4-9aa9-4ada-931e-a163eb060edc"
+	}
+}

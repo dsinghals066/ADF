@@ -1,0 +1,176 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "TimeStamp",
+				"type": "datetime2",
+				"scale": 3
+			},
+			{
+				"name": "/ES",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "/NQ",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "/RTY",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "SPY",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "QQQ",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "IWM",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "AAPL",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "MSFT",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "NVDA",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "XLK",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "XLF",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "XLP",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "XLY",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "XTN",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "HYG",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "TNX",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "TYX",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "/ES volume",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "TLT",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "TLT volume",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "VIX",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "SPX",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "SPX PCR",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "SPY PCR",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			},
+			{
+				"name": "/ES PCR",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 5
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "intradayMarketdata"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

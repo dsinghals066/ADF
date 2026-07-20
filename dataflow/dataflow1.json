@@ -1,0 +1,135 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "IntradataSource",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink1",
+					"rejectedDataLinkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					}
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "assert1"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as long,",
+				"          TimeStamp as timestamp,",
+				"          {/ES} as decimal(10,0),",
+				"          {/NQ} as decimal(10,0),",
+				"          {/RTY} as decimal(10,0),",
+				"          SPY as decimal(10,0),",
+				"          QQQ as decimal(10,0),",
+				"          IWM as decimal(10,0),",
+				"          AAPL as decimal(10,0),",
+				"          MSFT as decimal(10,0),",
+				"          NVDA as decimal(10,0),",
+				"          XLK as decimal(10,0),",
+				"          XLF as decimal(10,0),",
+				"          XLP as decimal(10,0),",
+				"          XLY as decimal(10,0),",
+				"          XTN as decimal(10,0),",
+				"          HYG as decimal(10,0),",
+				"          TNX as decimal(10,0),",
+				"          TYX as decimal(10,0),",
+				"          {/ES volume} as long,",
+				"          TLT as decimal(10,0),",
+				"          {TLT volume} as decimal(10,0),",
+				"          VIX as decimal(10,0),",
+				"          SPX as decimal(10,0),",
+				"          {SPX PCR} as decimal(10,0),",
+				"          {SPY PCR} as decimal(10,0),",
+				"          {/ES PCR} as decimal(10,0)",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: true,",
+				"     limit: 100,",
+				"     ignoreNoFilesFound: false,",
+				"     moveFiles: ['/csv','temp']) ~> source1",
+				"source1 derive(inserted_timedate = currentUTC()) ~> derivedColumn1",
+				"derivedColumn1 assert(expectTrue(greaterOrEqual({TLT volume},0), false, 'assert1'),",
+				"     expectTrue(isDecimal(toString(SPY)), true, 'assert2'),",
+				"     expectTrue(isTimestamp(toString(TimeStamp)), false, 'assert3')) ~> assert1",
+				"assert1 select(mapColumn(",
+				"          ID,",
+				"          TimeStamp,",
+				"          {/ES},",
+				"          {/NQ},",
+				"          {/RTY},",
+				"          SPY,",
+				"          QQQ,",
+				"          IWM,",
+				"          AAPL,",
+				"          MSFT,",
+				"          NVDA,",
+				"          XLK,",
+				"          XLF,",
+				"          XLP,",
+				"          XLY,",
+				"          XTN,",
+				"          HYG,",
+				"          TNX,",
+				"          TYX,",
+				"          {/ESvolume} = {/ES volume},",
+				"          TLT,",
+				"          TLTvolume = {TLT volume},",
+				"          VIX,",
+				"          SPX,",
+				"          SPXPCR = {SPX PCR},",
+				"          SPYPCR = {SPY PCR},",
+				"          {/ESPCR} = {/ES PCR},",
+				"          inserted_timedate",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     fileSystem: 'adf-ssis-source',",
+				"     folderPath: 'temp',",
+				"     truncate: true,",
+				"     compressionCodec: 'snappy',",
+				"     partitionFileNames:[(concat(\r",
+				"    'IntradayMarket_',\r",
+				"    toString(currentUTC(),'yyyy MM dd'),\r",
+				"    '.parquet'\r",
+				"))],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 1,",
+				"     outputAssertFailedRows: true,",
+				"     assertFailure_fileSystem: 'adf-ssis-source',",
+				"     assertFailure_folderPath: 'Rejected',",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}

@@ -1,0 +1,25 @@
+{
+	"name": "trigger1",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pipeline1",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/adf-ssis-source/blobs/csv/",
+			"blobPathEndsWith": ".csv",
+			"ignoreEmptyBlobs": false,
+			"scope": "/subscriptions/dc5224a5-5291-418f-af2e-8c6ce559ef9b/resourceGroups/adf_ssis/providers/Microsoft.Storage/storageAccounts/adfssisstorage",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}

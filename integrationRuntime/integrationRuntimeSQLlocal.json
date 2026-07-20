@@ -1,0 +1,6 @@
+{
+	"name": "integrationRuntimeSQLlocal",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}

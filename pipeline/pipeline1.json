@@ -1,0 +1,576 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "IntradataSource",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"exists",
+						"itemName",
+						"lastModified",
+						"columnCount",
+						"structure",
+						"size"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Errorlist",
+					"value": {
+						"value": "@if(\n    \n    equals(activity('Get Metadata1').output.columnCount,27),\n    createArray(''),\n    array(concat('Error : Column Count Mismatch expected 27 output:',string(activity('Get Metadata1').output.columnCount)))\n    \n\n\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Data flow1",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set variable2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "dataflow1",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None",
+					"cacheSinks": {
+						"firstRowOnly": true
+					}
+				}
+			},
+			{
+				"name": "Set variable2",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "Errorlist",
+					"value": {
+						"value": "@if(\n    \n    less(activity('Get Metadata1').output.size,1),\n    createArray(''),\n    array('File is empty')\n    \n\n\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Data flow1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "temp",
+							"wildcardFileName": {
+								"value": "@concat('IntradayMarket_',string(utcNow('yyyy MM dd')),'.parquet')",
+								"type": "Expression"
+							},
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "upsert",
+						"upsertSettings": {
+							"useTempDB": true,
+							"keys": [
+								"ID"
+							]
+						},
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "ID",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "ID",
+									"type": "Int64",
+									"physicalType": "bigint"
+								}
+							},
+							{
+								"source": {
+									"name": "TimeStamp",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TimeStamp",
+									"type": "DateTime",
+									"physicalType": "datetime2"
+								}
+							},
+							{
+								"source": {
+									"name": "/ES",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "/ES",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "/NQ",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "/NQ",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "/RTY",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "/RTY",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "SPY",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SPY",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "QQQ",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "QQQ",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "IWM",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "IWM",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "AAPL",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "AAPL",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "MSFT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "MSFT",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "NVDA",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "NVDA",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "XLK",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "XLK",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "XLF",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "XLF",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "XLP",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "XLP",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "XLY",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "XLY",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "XTN",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "XTN",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "HYG",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "HYG",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "TNX",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TNX",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "TYX",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TYX",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "/ESvolume",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "/ES volume",
+									"type": "Int32",
+									"physicalType": "int"
+								}
+							},
+							{
+								"source": {
+									"name": "TLT",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TLT",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "TLTvolume",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "TLT volume",
+									"type": "Int64",
+									"physicalType": "bigint"
+								}
+							},
+							{
+								"source": {
+									"name": "VIX",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "VIX",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "SPX",
+									"type": "String",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SPX",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "SPXPCR",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SPX PCR",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "SPYPCR",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "SPY PCR",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							},
+							{
+								"source": {
+									"name": "/ESPCR",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "/ES PCR",
+									"type": "Decimal",
+									"physicalType": "decimal",
+									"scale": 5,
+									"precision": 10
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Parquet1",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzureSqlTable1",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"variables": {
+			"Errorlist": {
+				"type": "Array"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-07-20T21:29:25Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
